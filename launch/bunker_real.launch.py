@@ -7,10 +7,13 @@ import os
 
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
+from launch.actions import IncludeLaunchDescription
+from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
 
 def generate_launch_description():
     pkg_name = "ugv_utils"
+    namespace = ""
     
     ### STATIC TF
     ### TF based on the main castle of sensors.
@@ -40,11 +43,25 @@ def generate_launch_description():
         parameters=[twist_mux_params],
     )
     
+    ### STATE PUBLISHER
+    ### For using this you need the ugv_gazebo_sim packege installed.
+    # launch_file_publisher_dir = os.path.join(get_package_share_director("bunker_gazebo_sim"), "launch")
+
+    # robot_state_publisher_cmd = IncludeLaunchDescription(
+    #     os.path.join(launch_file_publisher_dir, "bunker_robot_state_publisher.launch.py"),
+    #     launch_arguments={
+    #         "use_sim_time": LaunchConfiguration('use_sim_time'), 
+    #         "namespace": namespace
+    #     }.items(),
+    # )
+    
     ld = LaunchDescription()
     
     ld.add_action(transform_gps_node)
     ld.add_action(transform_imu_node)
     
     ld.add_action(twist_mux_node)
+    
+    # ld.add_action(robot_state_publisher_cmd)
     
     return ld
