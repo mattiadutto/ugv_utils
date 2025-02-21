@@ -33,24 +33,26 @@ def generate_launch_description():
     declare_use_gps_arg = DeclareLaunchArgument("use_gps", default_value=use_gps, description="usage of the gps")
     
     ### STATIC TF
+    ### This TF are calculated using the ITEM sensor castle mounted with the shovel on the robot.
+    ### For the IMU we don't need any TF the IMU node is already creating the TF.
     transform_camera_node = Node(
         package = "tf2_ros", 
         executable = "static_transform_publisher",
-        arguments = ["0", "-0.125", "0.205", "-1.57", "0", "0", "base_link", "camera"],
+        arguments = ["0.019", "-0.125", "0.205", "-1.57", "0", "0", "base_link", "camera"],
          condition=LaunchConfigurationEquals("use_camera", "true")
     ) 
     
     transform_gps_node = Node(
         package = "tf2_ros", 
         executable = "static_transform_publisher",
-        arguments = ["0.12", "0.209", "0.313", "0", "0", "0", "base_link", "gps"],
+        arguments = ["0.139", "0.209", "0.313", "0", "0", "0", "base_link", "gps"],
         condition=LaunchConfigurationEquals("use_gps", "true")
     ) 
     
     transform_lidar_node = Node(
         package = "tf2_ros", 
         executable = "static_transform_publisher",
-        arguments = ["0", "0", "0.384" if lidar_3d else "0.381", "0", "0", "0", "base_link", "velodyne" if lidar_3d else "laser"] 
+        arguments = ["0.019", "0", "0.384" if lidar_3d else "0.381", "0", "0", "0", "base_link", "velodyne" if lidar_3d else "laser"] 
     )
     
     ### TWIST MUX
@@ -167,7 +169,7 @@ def generate_launch_description():
     ld.add_action(declare_use_gps_arg)
     # TFs
     ld.add_action(transform_camera_node)
-    ld.add_action(transform_gps_node)
+    # ld.add_action(transform_gps_node)
     ld.add_action(transform_lidar_node)
     # Utily nodes
     ld.add_action(twist_mux_node)
@@ -175,7 +177,7 @@ def generate_launch_description():
     # Driver nodes
     ld.add_action(bunker_base_cmd)
     ld.add_action(camera_cmd)
-    ld.add_action(gps_cmd)
+    # ld.add_action(gps_cmd)
     ld.add_action(imu_cmd)
     ld.add_action(rplidar_cmd)
     ld.add_action(velodyne_cmd)
