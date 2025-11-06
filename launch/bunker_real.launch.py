@@ -15,7 +15,7 @@ from launch_ros.actions import Node
 
 
 def generate_launch_description():
-    pkg_name = "ugv_utils"
+    package_name = "ugv_utils"
 
     ekf_params_file = LaunchConfiguration(
         "ekf_params_file", default="ekf_localization_with_gps.yaml"
@@ -99,7 +99,7 @@ def generate_launch_description():
     ### TWIST MUX
     # File with twist_mux params
     twist_mux_params = os.path.join(
-        get_package_share_directory(pkg_name), "config", "twist_mux_real.yaml"
+        get_package_share_directory(package_name), "config", "twist_mux_real.yaml"
     )
 
     twist_mux_node = Node(
@@ -144,6 +144,7 @@ def generate_launch_description():
             "rgb_camera.color_profile": "1920x1080x30",
             "depth_module.depth_profile": "1280x720x30",
             "depth_module.infra_profile": "1280x720x30",
+            "align_depth.enable": "true",
             "pointcloud.enable": "true",
         }.items(),
     )
@@ -185,6 +186,7 @@ def generate_launch_description():
             os.path.join(pkg_lidar, "launch", "view_rplidar_a3_launch.py")
         ),
         condition=LaunchConfigurationEquals("lidar_3d", "false"),
+        launch_arguments={"use_rviz": "false"}.items(),
     )
 
     ### NAV2 Stack
@@ -228,6 +230,6 @@ def generate_launch_description():
     ld.add_action(rplidar_cmd)
     ld.add_action(velodyne_cmd)
     # Nav2
-    # ld.add_action(nav2_cmd)
+    ld.add_action(nav2_cmd)
 
     return ld
