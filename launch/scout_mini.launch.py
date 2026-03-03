@@ -19,7 +19,7 @@ def generate_launch_description():
     namespace = "scout_mini"
     use_sim_time = "true"
 
-    map_name = LaunchConfiguration("map_name", default="workshop_big_empty_slam.yaml")
+    map_name = LaunchConfiguration("map_name", default="warehouse.yaml")
     nav2_params_file = LaunchConfiguration(
         "nav2_params_file", default="nav2_params.yaml"
     )
@@ -50,9 +50,9 @@ def generate_launch_description():
         os.path.join(
             get_package_share_directory("scout_gazebo_sim"),
             "launch",
-            "scout_mini_workshop_world.launch.py",
+            "scout_mini_empty_world.launch.py",
         ),
-        launch_arguments={"use_rviz": "true", "yaw_pose": "0.0"}.items(),
+        launch_arguments={"use_rviz": "false", "yaw_pose": "0.0"}.items(),
     )
 
     ### NAV2 Stack
@@ -72,58 +72,6 @@ def generate_launch_description():
         }.items(),
     )
 
-    # nav2_cmd = IncludeLaunchDescription(
-    #     PythonLaunchDescriptionSource(
-    #         os.path.join(pkg_nav2, "launch", "nav2_speed_limit.launch.py")
-    #     ),
-    #     launch_arguments={
-    #         "use_sim_time": use_sim_time,
-    #         "use_rviz": "true",
-    #         "map_name": map_name,
-    #         "namespace": namespace,
-    #         "nav2_params_file": nav2_params_file,
-    #         "rviz_params_file": nav2_rviz_file,
-    #         "speed_map_name": "workshop_big_empty_slam_speed_limit.yaml",
-    #     }.items(),
-    # )
-
-    ### Feeding nodes.
-    lidar_distance_node = Node(
-        package="lidar_distance",
-        executable="lidar_distance",
-        name="lidar_distance",
-        parameters=[
-            PathJoinSubstitution(
-                [
-                    get_package_share_directory("lidar_distance"),
-                    "config",
-                    "params_lidar_distance.yaml",
-                ]
-            )
-        ],
-        remappings=[
-            ("/tf", f"{namespace}/tf"),
-            ("/tf_static", f"{namespace}/tf_static"),
-        ],
-        output="screen",
-    )
-
-    follow_waypoints_params = os.path.join(
-        get_package_share_directory("follow_waypoints"),
-        "config",
-        "params_follow_line.yaml",
-    )
-
-    file = open(follow_waypoints_params)
-
-    data = yaml.safe_load(file)["follow_line"]["ros__parameters"]
-
-    follow_waypoints_node = Node(
-        package="follow_waypoints",
-        executable="follow_line_exe",
-        output="screen",
-        parameters=[data],
-    )
 
     ld = LaunchDescription()
     # Lauch options
@@ -133,8 +81,6 @@ def generate_launch_description():
     # Sim
     ld.add_action(scout_gazebo_sim_cmd)
     # Nav2
-    ld.add_action(nav2_cmd)
-    # Feeding
-    # ld.add_action(lidar_distance_node)
-    # ld.add_action(follow_waypoints_node)
+    # ld.add_action(nav2_cmd)
+
     return ld
