@@ -26,6 +26,7 @@ def generate_launch_description():
     nav2_rviz_file = LaunchConfiguration(
         "nav2_rviz_file", default="scout_mini_navigation.rviz"
     )
+    use_gazebo_client = LaunchConfiguration("use_gazebo_client", default="true")
 
     declare_map_name_arg = DeclareLaunchArgument(
         "map_name",
@@ -45,14 +46,25 @@ def generate_launch_description():
         description="nav2 parameter configuration saved in src/scout_navigation/rviz",
     )
 
+    declare_use_gazebo_client_arg = DeclareLaunchArgument(
+        "use_gazebo_client",
+        default_value=use_gazebo_client,
+        description="Run gazebo client if true",
+    )
+
     ### Scout Mini
     scout_gazebo_sim_cmd = IncludeLaunchDescription(
         os.path.join(
             get_package_share_directory("scout_gazebo_sim"),
             "launch",
-            "scout_mini_workshop_world.launch.py",
+            "scout_mini_empty_world.launch.py",
         ),
-        launch_arguments={"use_rviz": "true", "yaw_pose": "0.0"}.items(),
+        launch_arguments={
+            "use_rviz": "false",  # This RViz is the standard one, this launch file will open the Nav2 one.
+            "yaw_pose": "0.0",
+            "world_name": "workshop_big.world",
+            "use_gazebo_client": use_gazebo_client,
+        }.items(),
     )
 
     ### NAV2 Stack
@@ -92,6 +104,7 @@ def generate_launch_description():
         package="lidar_distance",
         executable="lidar_distance",
         name="lidar_distance",
+        namespace=namespace,
         parameters=[
             PathJoinSubstitution(
                 [
@@ -102,8 +115,8 @@ def generate_launch_description():
             )
         ],
         remappings=[
-            ("/tf", f"{namespace}/tf"),
-            ("/tf_static", f"{namespace}/tf_static"),
+            ("/tf", f"/{namespace}/tf"),
+            ("/tf_static", f"/{namespace}/tf_static"),
         ],
         output="screen",
     )
@@ -130,11 +143,12 @@ def generate_launch_description():
     ld.add_action(declare_map_name_arg)
     ld.add_action(declare_nav2_params_file_arg)
     ld.add_action(declare_nav2_rviz_file_arg)
+    ld.add_action(declare_use_gazebo_client_arg)
     # Sim
     ld.add_action(scout_gazebo_sim_cmd)
     # Nav2
     ld.add_action(nav2_cmd)
     # Feeding
-    # ld.add_action(lidar_distance_node)
-    # ld.add_action(follow_waypoints_node)
+    ld.add_action(lidar_distance_node)
+    ld.add_action(follow_waypoints_node)
     return ld
